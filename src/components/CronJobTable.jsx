@@ -191,6 +191,16 @@ export default function CronJobTable({ data }) {
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
+  const handleCopyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        console.log('Text copied to clipboard:', text);
+        // You can optionally show a notification or perform any other action after copying
+      })
+      .catch((error) => {
+        console.error('Failed to copy text to clipboard:', error);
+      });
+  };
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -280,17 +290,7 @@ export default function CronJobTable({ data }) {
     paddingLeft: "20px",
   };
 
-  const handleCopyToClipboard = (text) => {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        console.log("Text copied to clipboard:", text);
-        // You can optionally show a notification or perform any other action after copying
-      })
-      .catch((error) => {
-        console.error("Failed to copy text to clipboard:", error);
-      });
-  };
+
 
   const truncateString = (str, maxLength) => {
     if (str.length > maxLength) {
@@ -408,12 +408,22 @@ export default function CronJobTable({ data }) {
                           horizontal: "right",
                         }}
                       >
-                        {selectedRowData && (
-                          <Typography sx={{ p: 2 }}>
+                        {selectedRowData && (<>
+                          <Button
+    variant="outlined"
+    onClick={() => handleCopyToClipboard(JSON.stringify(selectedRowData, null, 2))}
+    size="small"
+    sx={{margin:"5px 5px 5px 5px"}}
+  >
+    Copy
+  </Button>
+  <Typography sx={{ p: 2 }}>
                             <pre>
                               {JSON.stringify(selectedRowData, null, 2)}
                             </pre>
                           </Typography>
+                        </>
+                          
                         )}
                       </Popover>
                     </div>

@@ -97,6 +97,18 @@ export default function SettingsTable({ data }) {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [selectedRowData, setSelectedRowData] = React.useState(null);
 
+    React.useEffect(()=>{
+        document.addEventListener("click", handleClosePopover);
+        return () => {
+          document.removeEventListener("click", handleClosePopover);
+        };
+      },[anchorEl])
+      const handleClosePopover = (event) => {
+        if (anchorEl && !anchorEl.contains(event.target)) {
+          setAnchorEl(null);
+        }
+      };
+      
     const handleClick = (event, rowData) => {
         setSelectedRowData(rowData);
         setAnchorEl(event.currentTarget);
@@ -178,13 +190,23 @@ export default function SettingsTable({ data }) {
         onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'left',
+          horizontal: 'right',
         }}
       >
         {selectedRowData && (
+            <>
+            <Button
+            variant="outlined"
+            onClick={() => handleCopyToClipboard(JSON.stringify(selectedRowData, null, 2))}
+            size="small"
+            sx={{margin:"5px 5px 5px 5px"}}
+          >
+            Copy
+          </Button>
                         <Typography sx={{ p: 2 }}>
                             <pre>{JSON.stringify(selectedRowData,null,2)}</pre>
                             </Typography>
+                            </>
                     )}
       </Popover>
     </div>

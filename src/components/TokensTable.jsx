@@ -123,6 +123,17 @@ export default function TokensTable({data}) {
   const open = Boolean(anchorEl);
     const id = open ? 'simple-popover' : undefined;
 
+const handleCopyToClipboard = (text) => {
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      console.log('Text copied to clipboard:', text);
+      // You can optionally show a notification or perform any other action after copying
+    })
+    .catch((error) => {
+      console.error('Failed to copy text to clipboard:', error);
+    });
+};
+
 
   
   function descendingComparator(a, b, orderBy) {
@@ -181,6 +192,7 @@ export default function TokensTable({data}) {
     }
     setSelected([]);
   };
+  
 
   // const handleClick = (event, id) => {
   //   const selectedIndex = selected.indexOf(id);
@@ -280,21 +292,29 @@ export default function TokensTable({data}) {
         View
       </Button>
       <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-      >
-        {selectedRowData && (
-                        <Typography sx={{ p: 2 }}>
-                            <pre>{JSON.stringify(selectedRowData,null,2)}</pre>
-                            </Typography>
-                    )}
-      </Popover>
+  id={id}
+  open={open}
+  anchorEl={anchorEl}
+  onClose={handleClose}
+  anchorOrigin={{
+    vertical: 'bottom',
+    horizontal: 'right',
+  }}
+>
+<Button
+    variant="outlined"
+    onClick={() => handleCopyToClipboard(JSON.stringify(selectedRowData, null, 2))}
+    size="small"
+    sx={{margin:"5px 5px 5px 5px"}}
+  >
+    Copy
+  </Button>
+  <Typography sx={{ p: 2 }}>
+    <pre>{JSON.stringify(selectedRowData, null, 2)}</pre>
+  </Typography>
+  
+</Popover>
+
     </div>
       </TableCell>
                     </TableRow>

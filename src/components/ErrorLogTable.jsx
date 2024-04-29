@@ -390,11 +390,19 @@ const compareID = (a, b, order) => {
                         }}
                       >
                         {selectedRowData && (
+                          <><Button
+                          variant="outlined"
+                          onClick={() => handleCopyToClipboard(JSON.stringify(selectedRowData, null, 2))}
+                          size="small"
+                          sx={{margin:"5px 5px 5px 5px"}}
+                        >
+                          Copy
+                        </Button>
                           <Typography sx={{ p: 2 }}>
                             <pre>
                               {JSON.stringify(selectedRowData, null, 2)}
                             </pre>
-                          </Typography>
+                          </Typography></>
                         )}
                       </Popover>
                     </div>

@@ -11,6 +11,7 @@ import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Paper from "@mui/material/Paper";
 import { visuallyHidden } from "@mui/utils";
+import { Button, Popover, Typography } from "@mui/material";
 
 
 
@@ -62,6 +63,12 @@ const headCells = [
     numeric: false,
     disablePadding: false,
     label: "Response",
+  },
+  {
+    id: "json_view",
+    numeric: false,
+    disablePadding: false,
+    label: "JSON View",
   },
 ];
 
@@ -128,8 +135,31 @@ export default function ActivityTable({data}) {
   const [orderBy, setOrderBy] = React.useState("url");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
-
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [selectedRowData, setSelectedRowData] = React.useState(null);
+  React.useEffect(()=>{
+    document.addEventListener("click", handleClosePopover);
+    return () => {
+      document.removeEventListener("click", handleClosePopover);
+    };
+  },[anchorEl])
+  const handleClosePopover = (event) => {
+    if (anchorEl && !anchorEl.contains(event.target)) {
+      setAnchorEl(null);
+    }
+  };
+  const handleClick = (event, rowData) => {
+    setSelectedRowData(rowData);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? "simple-popover" : undefined;
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -171,24 +201,24 @@ export default function ActivityTable({data}) {
     setSelected([]);
   };
 
-  const handleClick = (event, id) => {
-    const selectedIndex = selected.indexOf(id);
-    let newSelected = [];
+  // const handleClick = (event, id) => {
+  //   const selectedIndex = selected.indexOf(id);
+  //   let newSelected = [];
 
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-    setSelected(newSelected);
-  };
+  //   if (selectedIndex === -1) {
+  //     newSelected = newSelected.concat(selected, id);
+  //   } else if (selectedIndex === 0) {
+  //     newSelected = newSelected.concat(selected.slice(1));
+  //   } else if (selectedIndex === selected.length - 1) {
+  //     newSelected = newSelected.concat(selected.slice(0, -1));
+  //   } else if (selectedIndex > 0) {
+  //     newSelected = newSelected.concat(
+  //       selected.slice(0, selectedIndex),
+  //       selected.slice(selectedIndex + 1)
+  //     );
+  //   }
+  //   setSelected(newSelected);
+  // };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -265,7 +295,7 @@ export default function ActivityTable({data}) {
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row.id)}
+                    onClick={(event) => handleClick(event, row)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
@@ -290,6 +320,37 @@ export default function ActivityTable({data}) {
                     onClick={() => handleCopyToClipboard(row?.res)}
                     sx={{ paddingLeft: "20px" }} align="left">
                       {truncateString(row?.res, 30)}
+                    </TableCell>
+                    <TableCell>
+                    <div>
+                      <Button
+                        aria-describedby={id}
+                        size="small"
+                        variant="outlined"
+                        onClick={(event) => handleClick(event, row)}
+                      >
+                        view
+                      </Button>
+                      <Popover
+                      // sx={{maxWidth:"700px"}}
+                        id={id}
+                        open={open}
+                        anchorEl={anchorEl}
+                        onClose={handleClose}
+                        anchorOrigin={{
+                          vertical: "bottom",
+                          horizontal: "right",
+                        }}
+                      >
+                        {selectedRowData && (
+                          <Typography sx={{ p: 2 }}>
+                            <pre>
+                              {JSON.stringify(selectedRowData, null, 2)}
+                            </pre>
+                          </Typography>
+                        )}
+                      </Popover>
+                    </div>
                     </TableCell>
                   </TableRow>
                 );

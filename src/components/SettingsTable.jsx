@@ -1,6 +1,6 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, TablePagination, Paper } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, TablePagination, Paper, Button, Popover, Typography } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 
 function descendingComparator(a, b, orderBy) {
@@ -35,6 +35,7 @@ const headCells = [
     { id: 'setting_type', numeric: false, disablePadding: false, label: 'Setting Type' },
     { id: 'uuid', numeric: false, disablePadding: false, label: 'UUID' },
     { id: 'setting_schema', numeric: false, disablePadding: false, label: 'Schema' },
+    { id: 'json_view', numeric: false, disablePadding: false, label: 'JSON View' },
 ];
 
 function EnhancedTableHead(props) {
@@ -93,6 +94,20 @@ export default function SettingsTable({ data }) {
     const [selected, setSelected] = React.useState([]);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [selectedRowData, setSelectedRowData] = React.useState(null);
+
+    const handleClick = (event, rowData) => {
+        setSelectedRowData(rowData);
+        setAnchorEl(event.currentTarget);
+    };
+  
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+  
+    const open = Boolean(anchorEl);
+    const id = open ? 'simple-popover' : undefined;
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -151,6 +166,29 @@ export default function SettingsTable({ data }) {
                                         <TableCell
                                         onClick={() => handleCopyToClipboard(JSON.stringify(row?.setting_schema))}
                                         align="left" sx={{ paddingLeft: '20px' }}>{truncateString(JSON.stringify(row?.setting_schema), 30)}</TableCell>
+                                        <TableCell align="left" sx={{ paddingLeft: '20px' }}>
+                                        <div>
+      <Button aria-describedby={id} size='small' variant='outlined' onClick={(event)=>handleClick(event, row)}>
+        View
+      </Button>
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        {selectedRowData && (
+                        <Typography sx={{ p: 2 }}>
+                            <pre>{JSON.stringify(selectedRowData,null,2)}</pre>
+                            </Typography>
+                    )}
+      </Popover>
+    </div>
+                                        </TableCell>
                                     </TableRow>
                                 );
                             })}

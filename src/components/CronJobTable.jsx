@@ -11,6 +11,7 @@ import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Paper from "@mui/material/Paper";
 import { visuallyHidden } from "@mui/utils";
+import { Button, Popover, Typography } from "@mui/material";
 
 const getRandomColor = () => {
   const colors = ["blue", "orange", "red", "green"];
@@ -95,6 +96,12 @@ const headCells = [
     disablePadding: false,
     label: "Setting type",
   },
+  {
+    id: "json_view",
+    numeric: false,
+    disablePadding: false,
+    label: "JSON View",
+  },
 ];
 
 function EnhancedTableHead(props) {
@@ -104,11 +111,11 @@ function EnhancedTableHead(props) {
   };
 
   return (
-    <TableHead sx={{ bgcolor: "black" }} si>
-      <TableRow >
+    <TableHead sx={{ bgcolor: "black" }}>
+      <TableRow>
         {headCells.map((headCell, index) => (
           <TableCell
-            sx={{padding:"0", paddingLeft: "20px" }}
+            sx={{ padding: "0", paddingLeft: "20px" }}
             key={headCell.id}
             align="left"
             padding={headCell.disablePadding ? "none" : "normal"}
@@ -124,7 +131,7 @@ function EnhancedTableHead(props) {
                 },
               }}
             >
-              <h4 style={{ color: "white", }}>
+              <h4 style={{ color: "white" }}>
                 {headCell.label}
                 {orderBy === headCell.id ? (
                   <Box component="span" sx={visuallyHidden}>
@@ -159,6 +166,31 @@ export default function CronJobTable({ data }) {
   const [page, setPage] = React.useState(0);
 
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [selectedRowData, setSelectedRowData] = React.useState(null);
+
+  React.useEffect(()=>{
+    document.addEventListener("click", handleClosePopover);
+    return () => {
+      document.removeEventListener("click", handleClosePopover);
+    };
+  },[anchorEl])
+  const handleClosePopover = (event) => {
+    if (anchorEl && !anchorEl.contains(event.target)) {
+      setAnchorEl(null);
+    }
+  };
+  const handleClick = (event, rowData) => {
+    setSelectedRowData(rowData);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? "simple-popover" : undefined;
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -168,7 +200,7 @@ export default function CronJobTable({ data }) {
   const compareColumn = (a, b, order) => {
     const A = a.created_at.toString();
     const B = b.created_at.toString();
-  
+
     if (order === "asc") {
       if (A < B) return -1;
       if (A > B) return 1;
@@ -188,24 +220,24 @@ export default function CronJobTable({ data }) {
     setSelected([]);
   };
 
-  const handleClick = (event, id) => {
-    const selectedIndex = selected.indexOf(id);
-    let newSelected = [];
+  // const handleClick = (event, id) => {
+  //   const selectedIndex = selected.indexOf(id);
+  //   let newSelected = [];
 
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-    setSelected(newSelected);
-  };
+  //   if (selectedIndex === -1) {
+  //     newSelected = newSelected.concat(selected, id);
+  //   } else if (selectedIndex === 0) {
+  //     newSelected = newSelected.concat(selected.slice(1));
+  //   } else if (selectedIndex === selected.length - 1) {
+  //     newSelected = newSelected.concat(selected.slice(0, -1));
+  //   } else if (selectedIndex > 0) {
+  //     newSelected = newSelected.concat(
+  //       selected.slice(0, selectedIndex),
+  //       selected.slice(selectedIndex + 1)
+  //     );
+  //   }
+  //   setSelected(newSelected);
+  // };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -225,43 +257,44 @@ export default function CronJobTable({ data }) {
   const visibleRows = React.useMemo(
     () =>
       stableSort(cron_data, (a, b) =>
-      orderBy === "type"
-        ? compareColumn(a, b, order)
-        : orderBy === "url"
-        ? compareColumn(a, b, order):orderBy === "id"
-        ? compareColumn(a, b, order):orderBy === "setting_type"
-        ? compareColumn(a, b, order)
-        : getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-      ),
-    [cron_data,order, orderBy, page, rowsPerPage]
+        orderBy === "type"
+          ? compareColumn(a, b, order)
+          : orderBy === "url"
+          ? compareColumn(a, b, order)
+          : orderBy === "id"
+          ? compareColumn(a, b, order)
+          : orderBy === "setting_type"
+          ? compareColumn(a, b, order)
+          : getComparator(order, orderBy)
+      ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [cron_data, order, orderBy, page, rowsPerPage]
   );
   const bgColor = getRandomColor();
   const textStyle = {
     color: "white",
     display: "inline-block",
     padding: "5px", // Adjust padding as needed
-    borderRadius: "5px" // Adjust border radius as needed
+    borderRadius: "5px", // Adjust border radius as needed
   };
   const cellStyle = {
-    paddingLeft: "20px"
+    paddingLeft: "20px",
   };
 
   const handleCopyToClipboard = (text) => {
-    navigator.clipboard.writeText(text)
+    navigator.clipboard
+      .writeText(text)
       .then(() => {
-        console.log('Text copied to clipboard:', text);
+        console.log("Text copied to clipboard:", text);
         // You can optionally show a notification or perform any other action after copying
       })
       .catch((error) => {
-        console.error('Failed to copy text to clipboard:', error);
+        console.error("Failed to copy text to clipboard:", error);
       });
   };
 
   const truncateString = (str, maxLength) => {
     if (str.length > maxLength) {
-      return str.slice(0, maxLength) + '...';
+      return str.slice(0, maxLength) + "...";
     }
     return str;
   };
@@ -293,7 +326,7 @@ export default function CronJobTable({ data }) {
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row.id)}
+                    onClick={(event) => handleClick(event, row)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
@@ -302,7 +335,7 @@ export default function CronJobTable({ data }) {
                     sx={{ cursor: "pointer" }}
                   >
                     <TableCell
-                    onClick={() => handleCopyToClipboard(row?.req_url)}
+                      onClick={() => handleCopyToClipboard(row?.req_url)}
                       sx={{ paddingLeft: "20px" }}
                       component="th"
                       id={labelId}
@@ -312,19 +345,31 @@ export default function CronJobTable({ data }) {
                     >
                       {truncateString(row?.req_url, 30)}
                     </TableCell>
-                    <TableCell 
-                    onClick={() => handleCopyToClipboard(JSON.stringify(row?.req_headers))}
-                    sx={{ paddingLeft: "20px" }} align="left">
-                      {truncateString(JSON.stringify(row?.req_headers),30)}
+                    <TableCell
+                      onClick={() =>
+                        handleCopyToClipboard(JSON.stringify(row?.req_headers))
+                      }
+                      sx={{ paddingLeft: "20px" }}
+                      align="left"
+                    >
+                      {truncateString(JSON.stringify(row?.req_headers), 30)}
                     </TableCell>
-                    <TableCell 
-                    onClick={() => handleCopyToClipboard(JSON.stringify(row?.req_params))}
-                    sx={{ paddingLeft: "20px" }} align="left">
-                      {truncateString(JSON.stringify(row?.req_params),30)}
+                    <TableCell
+                      onClick={() =>
+                        handleCopyToClipboard(JSON.stringify(row?.req_params))
+                      }
+                      sx={{ paddingLeft: "20px" }}
+                      align="left"
+                    >
+                      {truncateString(JSON.stringify(row?.req_params), 30)}
                     </TableCell>
-                    <TableCell 
-                    onClick={() => handleCopyToClipboard((JSON.stringify(row?.req_body)))}
-                    sx={{ paddingLeft: "20px" }} align="left">
+                    <TableCell
+                      onClick={() =>
+                        handleCopyToClipboard(JSON.stringify(row?.req_body))
+                      }
+                      sx={{ paddingLeft: "20px" }}
+                      align="left"
+                    >
                       {truncateString(JSON.stringify(row?.req_body), 30)}
                     </TableCell>
                     <TableCell sx={{ paddingLeft: "20px" }} align="left">
@@ -333,13 +378,45 @@ export default function CronJobTable({ data }) {
                     <TableCell sx={{ paddingLeft: "20px" }} align="left">
                       {row?.setting_id}
                     </TableCell>
-                    <TableCell sx={{ cellStyle}} align="left">
-                    <span style={{ ...textStyle, backgroundColor: bgColor }}>
-        {row?.status}
-      </span>
+                    <TableCell sx={{ cellStyle }} align="left">
+                      <span style={{ ...textStyle, backgroundColor: bgColor }}>
+                        {row?.status}
+                      </span>
                     </TableCell>
                     <TableCell sx={{ paddingLeft: "20px" }} align="left">
                       {row?.setting_type}
+                    </TableCell>
+
+                    <TableCell>
+                    <div>
+                      <Button
+                        aria-describedby={id}
+                        size="small"
+                        variant="outlined"
+                        onClick={(event) => handleClick(event, row)}
+                      >
+                        view
+                      </Button>
+                      <Popover
+                      // sx={{maxWidth:"700px"}}
+                        id={id}
+                        open={open}
+                        anchorEl={anchorEl}
+                        onClose={handleClose}
+                        anchorOrigin={{
+                          vertical: "bottom",
+                          horizontal: "right",
+                        }}
+                      >
+                        {selectedRowData && (
+                          <Typography sx={{ p: 2 }}>
+                            <pre>
+                              {JSON.stringify(selectedRowData, null, 2)}
+                            </pre>
+                          </Typography>
+                        )}
+                      </Popover>
+                    </div>
                     </TableCell>
                   </TableRow>
                 );

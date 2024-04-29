@@ -11,6 +11,7 @@ import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Paper from "@mui/material/Paper";
 import { visuallyHidden } from "@mui/utils";
+import { Button, Popover, Typography } from "@mui/material";
 
 
 
@@ -19,10 +20,10 @@ import { visuallyHidden } from "@mui/utils";
 const headCells = [
  
   {
-    id: "setting",
+    id: "service_name",
     numeric: false,
     disablePadding: false,
-    label: "Setting Name",
+    label: "Service Name",
   },
   {
     id: "zuid",
@@ -30,6 +31,7 @@ const headCells = [
     disablePadding: false,
     label: "ZUID",
   },
+  { id: 'json_view', numeric: false, disablePadding: false, label: 'JSON View' },
 
 ];
 
@@ -93,8 +95,36 @@ export default function TokensTable({data}) {
   const [orderBy, setOrderBy] = React.useState("setting");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
-
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [selectedRowData, setSelectedRowData] = React.useState(null);
+
+  React.useEffect(()=>{
+    document.addEventListener("click", handleClosePopover);
+    return () => {
+      document.removeEventListener("click", handleClosePopover);
+    };
+  },[anchorEl])
+  const handleClosePopover = (event) => {
+    if (anchorEl && !anchorEl.contains(event.target)) {
+      setAnchorEl(null);
+    }
+  };
+
+  const handleClick = (event, rowData) => {
+      setSelectedRowData(rowData);
+      setAnchorEl(event.currentTarget);
+      // event.stopPropagation();
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const open = Boolean(anchorEl);
+    const id = open ? 'simple-popover' : undefined;
+
+
+  
   function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
       return -1;
@@ -152,24 +182,24 @@ export default function TokensTable({data}) {
     setSelected([]);
   };
 
-  const handleClick = (event, id) => {
-    const selectedIndex = selected.indexOf(id);
-    let newSelected = [];
+  // const handleClick = (event, id) => {
+  //   const selectedIndex = selected.indexOf(id);
+  //   let newSelected = [];
 
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-    setSelected(newSelected);
-  };
+  //   if (selectedIndex === -1) {
+  //     newSelected = newSelected.concat(selected, id);
+  //   } else if (selectedIndex === 0) {
+  //     newSelected = newSelected.concat(selected.slice(1));
+  //   } else if (selectedIndex === selected.length - 1) {
+  //     newSelected = newSelected.concat(selected.slice(0, -1));
+  //   } else if (selectedIndex > 0) {
+  //     newSelected = newSelected.concat(
+  //       selected.slice(0, selectedIndex),
+  //       selected.slice(selectedIndex + 1)
+  //     );
+  //   }
+  //   setSelected(newSelected);
+  // };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -197,7 +227,7 @@ export default function TokensTable({data}) {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [order, orderBy, page, rowsPerPage]
+    [token_data,order, orderBy, page, rowsPerPage]
   );
 
   return (
@@ -219,13 +249,12 @@ export default function TokensTable({data}) {
             <TableBody>
               {visibleRows.map((row, index) => {
                 const isItemSelected = isSelected(row.id);
-                const labelId = `enhanced-table-checkbox-${index}`;
+                // const labelId = `enhanced-table-checkbox-${index}`;
 
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row.id)}
-                    role="checkbox"
+                    onClick={(event) => handleClick(event, row)}
                     aria-checked={isItemSelected}
                     tabIndex={-1}
                     key={row.id}
@@ -235,18 +264,40 @@ export default function TokensTable({data}) {
                     <TableCell
                       sx={{ paddingLeft: "20px" }}
                       component="th"
-                      id={labelId}
                       scope="row"
                       padding="none"
                       align="left"
                     >
-                      {row.service_name}
+                      {row?.service_name}
                     </TableCell>
                     <TableCell sx={{ paddingLeft: "20px" }} align="left">
                       {row?.zuid}
                     </TableCell>
-                    
-                  </TableRow>
+                    <TableCell align="left" sx={{ paddingLeft: '20px' }}>
+                                        <div>
+      <Button aria-describedby={id} size='small' variant='outlined' 
+      onClick={(event)=>handleClick(event, row)}>
+        View
+      </Button>
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+      >
+        {selectedRowData && (
+                        <Typography sx={{ p: 2 }}>
+                            <pre>{JSON.stringify(selectedRowData,null,2)}</pre>
+                            </Typography>
+                    )}
+      </Popover>
+    </div>
+      </TableCell>
+                    </TableRow>
                 );
               })}
               {emptyRows > 0 && (

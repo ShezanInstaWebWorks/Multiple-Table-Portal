@@ -184,7 +184,7 @@ export default function ErrorLogTable({ data }) {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
-    console.log(`Sorting by ${property} in ${isAsc ? 'descending' : 'ascending'} order`);
+    
   };
  
  const compareName = (a, b, order) => {
@@ -327,7 +327,6 @@ const compareID = (a, b, order) => {
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}

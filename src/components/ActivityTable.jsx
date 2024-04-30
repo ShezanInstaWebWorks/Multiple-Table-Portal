@@ -296,7 +296,6 @@ export default function ActivityTable({data}) {
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}

@@ -13,11 +13,25 @@ import Paper from "@mui/material/Paper";
 import { visuallyHidden } from "@mui/utils";
 import { Button, Popover, Typography } from "@mui/material";
 
-const getRandomColor = () => {
-  const colors = ["blue", "orange", "red", "green"];
-  const randomIndex = Math.floor(Math.random() * colors.length);
-  return colors[randomIndex];
+const getColor = (status) => {
+  switch (status) {
+    case "Recent":
+      return "#0818A8";
+    case "Bouncing":
+      return "orange";
+    case "Inactive":
+      return "red";
+    case "Active":
+      return "green";
+    case "Completed":
+      return "#0096FF";
+    default:
+     
+      return "#0096FF";
+  }
 };
+
+
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -279,7 +293,7 @@ export default function CronJobTable({ data }) {
       ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
     [cron_data, order, orderBy, page, rowsPerPage]
   );
-  const bgColor = getRandomColor();
+  const bgColor = getColor();
   const textStyle = {
     color: "white",
     display: "inline-block",
@@ -326,7 +340,6 @@ export default function CronJobTable({ data }) {
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
@@ -378,11 +391,12 @@ export default function CronJobTable({ data }) {
                     <TableCell sx={{ paddingLeft: "20px" }} align="left">
                       {row?.setting_id}
                     </TableCell>
-                    <TableCell sx={{ cellStyle }} align="left">
-                      <span style={{ ...textStyle, backgroundColor: bgColor }}>
-                        {row?.status}
-                      </span>
-                    </TableCell>
+                    <TableCell sx={{ paddingLeft: "20px" }} align="left">
+  <span style={{ ...textStyle, backgroundColor: getColor(row?.status) }}>
+    {row?.status}
+  </span>
+</TableCell>
+
                     <TableCell sx={{ paddingLeft: "20px" }} align="left">
                       {row?.setting_type}
                     </TableCell>
